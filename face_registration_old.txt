@@ -1,0 +1,623 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:iem_attendance_app/models/student_model.dart';
+import 'package:iem_attendance_app/services/api_service.dart';
+import 'package:iem_attendance_app/services/auth_service.dart';
+import 'package:iem_attendance_app/services/database_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
+import 'package:http/http.dart' as http;
+
+class FaceRegistration extends StatefulWidget {
+  final StudentModel student;
+  const FaceRegistration({super.key, required this.student});
+
+  @override
+  State<FaceRegistration> createState() => _FaceRegistrationState();
+}
+
+class _FaceRegistrationState extends State<FaceRegistration> {
+
+  late StudentModel student;
+
+  double screenHeight = 0;
+  double screenWidth = 0;
+
+
+  File? _image;
+  // late ImagePicker imagePicker;
+  // late FaceDetector faceDetector;
+ 
+  bool _isUploading = false;
+  List<Face> faces = [];
+
+  // List<String> angles = ["Look Front", "Look Top", "Look Right", "Look Left"];
+  List<String> angles = ["Look Front"];
+
+  int currentAngleIndex = 0;
+  Map<String, File> faceImages = {};
+
+  void initState() {
+    super.initState();
+    student = widget.student;
+    imagePicker = ImagePicker();
+
+    final options = FaceDetectorOptions(enableClassification: true);
+    faceDetector = FaceDetector(options: options);
+  }
+
+  String get currentAngle => angles[currentAngleIndex];
+
+  void chooseImage() async {
+    XFile? selectedImage = await imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 50,
+    );
+    if (selectedImage != null) {
+      setState(() {
+        _image = File(selectedImage.path);
+        print("Selected image path: ${selectedImage.path}");
+
+      });
+      doFaceDetection();
+    }
+  }
+
+  void captureImage() async {
+    XFile? selectedImage = await imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 50,
+      preferredCameraDevice: CameraDevice.front,
+    );
+    if (selectedImage != null) {
+      setState(() {
+        _image = File(selectedImage.path);
+        print("Selected image path: ${selectedImage.path}");
+      });
+      doFaceDetection();
+    }
+  }
+
+
+  // Future<Map<String, String>> uploadFaceImages(String userId) async {
+  //   Map<String, String> faceUrls = {};
+  //
+  //   for (String angle in angles) {
+  //     File file = faceImages[angle]!;
+  //     String fileName = 'face/$userId/${angle.toLowerCase().replaceAll(" ", "_")}.jpg';
+  //     Reference ref = FirebaseStorage.instance.ref().child(fileName);
+  //     await ref.putFile(
+  //       file,
+  //       SettableMetadata(
+  //         contentType: 'image/jpeg',
+  //       ),
+  //     );
+  //
+  //
+  //     print("Uploading file for angle: $angle, path: ${file.path}");
+  //
+  //     String downloadUrl = await ref.getDownloadURL();
+  //     faceUrls[angle] = downloadUrl;
+  //     print("Download URL for $angle: $downloadUrl");
+  //
+  //   }
+  //
+  //   return faceUrls;
+  // }
+
+  Future<void> uploadFaceImagesAndSaveToFirestore() async {
+    try {
+      final token = await AuthService().getToken();
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Not authenticated')));
+        return;
+      }
+
+      if (faceImages.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No face images to upload')));
+        return;
+      }
+
+      setState(() {
+        isDetecting = true;
+      });
+
+      // call API
+      final api = ApiService(Uri.parse('https://api.yourdomain.com')); // change to your server
+      final resp = await api.uploadFaceImages(
+        token: token,
+        userId: student.id,
+        faceImages: faceImages, // Map<String, File>
+      );
+
+      setState(() {
+        isDetecting = false;
+      });
+
+      if (resp['ok'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Face Registration Completed')));
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Upload error: ${resp['error'] ?? resp}')));
+      }
+    } catch (e, st) {
+      setState(() { isDetecting = false; });
+      debugPrint('Upload error: $e');
+      debugPrintStack(stackTrace: st);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error uploading images')));
+    }
+  }
+
+
+  // Future<void> uploadFaceImagesAndSaveToFirestore() async {
+  //   try {
+  //     // String userId = student.id;
+  //
+  //     debugPrint("Uploading images for: ${student.id}");
+  //
+  //     final faceUrls = await uploadFaceImages(student.id);
+  //     debugPrint("Face URLs: $faceUrls");
+  //
+  //     await DatabaseService().updateStudentFaceData(student.id, faceUrls);
+  //
+  //     // Map<String, String> faceUrls = await uploadFaceImages(userId);
+  //
+  //     // await FirebaseFirestore.instance.collection('users').doc(student.id).update({
+  //     //   'faceData': faceUrls,
+  //     //   'profileImage': faceUrls['Look Front'],
+  //     // });
+  //
+  //     // if (mounted) {
+  //     //   ScaffoldMessenger.of(context).showSnackBar(
+  //     //     SnackBar(
+  //     //       content: Text('Face Registration Completed'),
+  //     //     ),
+  //     //   );
+  //     //   Navigator.pop(context);
+  //     // }
+  //     if (!mounted) return;
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Face Registration Completed')),
+  //     );
+  //     Navigator.pop(context);
+  //   } catch(e, stack) {
+  //     debugPrint("Error in upload: $e");
+  //     debugPrintStack(stackTrace: stack);
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Error uploading images")),
+  //     );
+  //   }
+  // }
+
+  void doFaceDetection() async {
+
+    setState(() {
+      isDetecting = true;
+    });
+
+    _image = await removeRotation(_image!);
+    InputImage inputImage = InputImage.fromFile(_image!);
+
+    faces = await faceDetector.processImage(inputImage);
+
+    setState(() {
+      isDetecting = false;
+    });
+
+    if (faces.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No face detected")),
+      );
+      return;
+    }
+
+    // Use the face with largest area (closest)
+    Face mainFace = faces.reduce((a, b) =>
+    a.boundingBox.height * a.boundingBox.width >
+        b.boundingBox.height * b.boundingBox.width
+        ? a
+        : b);
+    faces = [mainFace]; // Update to only show this one
+
+    final faceRect = faces[0].boundingBox;
+    final bytes = _image!.readAsBytesSync();
+    final tempImg = img.decodeImage(bytes);
+
+
+    if (tempImg == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Image processing failed")),
+      );
+      return;
+    }
+
+    if (tempImg != null) {
+      final reSizedImg = img.copyResize(tempImg, width: 800);
+      final int cropX = faceRect.left.toInt().clamp(0, tempImg.width - 1);
+      final int cropY = faceRect.top.toInt().clamp(0, tempImg.height - 1);
+      final int cropWidth = faceRect.width.toInt().clamp(0, tempImg.width - cropX);
+      final int cropHeight = faceRect.height.toInt().clamp(0, tempImg.height - cropY);
+
+      faceImage = img.copyCrop(tempImg, x: cropX, y: cropY, width: cropWidth, height: cropHeight);
+    }
+
+    bool isValidAngle(Face face) {
+      double? yaw = face.headEulerAngleY; // left/right
+      double? pitch = face.headEulerAngleX; // up/down
+
+      switch (currentAngle) {
+        case "Look Front":
+          return yaw != null && pitch != null && yaw.abs() < 10 && pitch.abs() < 10;
+
+        case "Look Left":
+          return yaw != null && yaw < -25; // Left from *user's perspective* (i.e., right tilt = -ve yaw in front cam)
+
+        case "Look Right":
+          return yaw != null && yaw > 25;  // Right from *user's perspective* (i.e., left tilt = +ve yaw in front cam)
+
+        case "Look Top":
+          return pitch != null && pitch > 25;
+
+        default:
+          return false;
+      }
+    }
+
+    if (!isValidAngle(mainFace)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Face not in correct direction for $currentAngle")),
+      );
+      return;
+    }
+
+    drawRectanglesAroundFaces();
+
+    print("Number of faces detected: ${faces.length}");
+    print("Main face bounding box: ${mainFace.boundingBox}");
+    print("Yaw: ${mainFace.headEulerAngleY}, Pitch: ${mainFace.headEulerAngleX}");
+    saveFaceImage(); // new method
+
+    // for (Face face in faces) {
+    //   final Rect faceReact = face.boundingBox;
+    //
+    //   print("face = " + faceReact.toString());
+    //
+    //   var bytes = _image!.readAsBytesSync();
+    //   img.Image? tempImg = img.decodeImage(bytes);
+    //   faceImage = img.copyCrop(tempImg!, x: faceReact.left.toInt(), y: faceReact.top.toInt(), width: faceReact.width.toInt(), height: faceReact.height.toInt(),);
+    //
+    //   final double? rotX = face.headEulerAngleX; // Head is tilted up and down rotX degrees
+    //   final double? rotY = face.headEulerAngleY; // Head is rotated to the right rotY degrees
+    //   final double? rotZ = face.headEulerAngleZ; // Head is tilted sideways rotZ degrees
+    //
+    //   // If landmark detection was enabled with FaceDetectorOptions (mouth, ears,
+    //   // eyes, cheeks, and nose available):
+    //   final FaceLandmark? leftEar = face.landmarks[FaceLandmarkType.leftEar];
+    //   if (leftEar != null) {
+    //     final Point<int> leftEarPos = leftEar.position;
+    //   }
+    //
+    //   // If classification was enabled with FaceDetectorOptions:
+    //   if (face.smilingProbability != null) {
+    //     final double? smileProb = face.smilingProbability;
+    //   }
+    //
+    //   // If face tracking was enabled with FaceDetectorOptions:
+    //   if (face.trackingId != null) {
+    //     final int? id = face.trackingId;
+    //   }
+    // }
+
+    // drawRectanglesAroundFaces();
+  }
+
+  var image;
+  var faceImage;
+
+  void saveFaceImage() async {
+    final tempPath = '${_image!.parent.path}/face_${currentAngle.toLowerCase()}.jpg';
+    final croppedFile = await File(tempPath).writeAsBytes(img.encodeJpg(faceImage));
+    faceImages[currentAngle] = croppedFile;
+
+    setState(() {
+      // Find next angle that's not yet captured
+      int nextIndex = angles.indexWhere((angle) => !faceImages.containsKey(angle));
+
+      if (nextIndex != -1) {
+        currentAngleIndex = nextIndex;
+      }
+
+      print("Saving cropped image for: $currentAngle");
+      print("Cropped image saved at: $tempPath");
+
+      // Clear current image and detection to prepare for next step
+      image = null;
+      faces = [];
+      _image = null;
+    });
+  }
+
+  void drawRectanglesAroundFaces() async {
+    var bytes = await _image!.readAsBytesSync();
+    image = await decodeImageFromList(bytes);
+    setState(() {
+      // faceImage;
+      image;
+      faces;
+    });
+  }
+
+  Future<File> removeRotation(File inputImage) async {
+    final img.Image? capturedImage = img.decodeImage(await inputImage.readAsBytes());
+    final img.Image orientedImage = img.bakeOrientation(capturedImage!);
+    return await inputImage.writeAsBytes(img.encodeJpg(orientedImage));
+  }
+
+  String getInstructionForAngle(String angle) {
+    switch (angle) {
+      case "Look Front":
+        return "Hold the phone at eye level. Keep your head straight and look directly into the camera.";
+      case "Look Top":
+        return "Tilt your head upward (look at the ceiling), without moving the phone.";
+      case "Look Left":
+        return "Turn your face to your LEFT side, keeping your eyes looking that way.";
+      case "Look Right":
+        return "Turn your face to your RIGHT side, keeping your eyes looking that way.";
+      default:
+        return "";
+    }
+  }
+
+
+  Widget build(BuildContext context) {
+    screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
+
+    Color primary = const Color(0xFF765DBD);
+    final LinearGradient primaryGradient = LinearGradient(
+      colors: [Color(0xFF765DBD), Color(0xFF301B5A)],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+    const bgColor = Color(0xFFCFB7E6);
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+        title: const Text("Face Registration"),
+      ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Instruction: ",
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                      ),
+                      TextSpan(
+                        text: getInstructionForAngle(currentAngle),
+                        style: TextStyle(fontSize: 16, color: Colors.grey[800]),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                /// Image or Placeholder
+                Container(
+                  height: 300,
+                  width: double.infinity,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      image != null
+                          ? FittedBox(
+                        fit: BoxFit.contain,
+                        child: SizedBox(
+                          width: image.width.toDouble(),
+                          height: image.height.toDouble(),
+                          child: CustomPaint(
+                            painter: FacePainter(facesList: faces, imageFile: image),
+                          ),
+                        ),
+                      )
+                          : Image.asset(
+                            "images/dummy.png",
+                            width: 150,
+                            height: 150,
+                          ),
+                      if (isDetecting)
+                        const CircularProgressIndicator(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                /// Progress Indicator
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: LinearProgressIndicator(
+                    value: faceImages.length / angles.length,
+                    backgroundColor: Colors.grey.shade300,
+                    color: Colors.deepPurple,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                /// Captured Thumbnails Row
+                if (faceImages.isNotEmpty)
+                  SizedBox(
+                    height: 100,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      children: angles.map((angle) {
+                        return faceImages.containsKey(angle)
+                            ? Stack(
+                          alignment: Alignment.topRight,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 6),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  faceImages[angle]!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    faceImages.remove(angle);
+
+                                    currentAngleIndex = angles.indexOf(angle);
+
+                                    // if (currentAngle == angle) {
+                                    //   image = null;
+                                    //   faces = [];
+                                    // }
+
+                                    // Reset preview image and detected faces
+                                    image = null;
+                                    faces = [];
+
+                                    // Optional: show snackbar/toast
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text("Please re-upload image for: $angle"),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  });
+                                },
+                                child: const CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: Colors.red,
+                                  child: Icon(Icons.close, size: 14, color: Colors.white),
+                                ),
+                              ),
+                            )
+                          ],
+                        )
+                            : const SizedBox();
+                      }).toList(),
+                    ),
+                  ),
+
+                const SizedBox(height: 24),
+
+                /// Image Select & Capture Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: chooseImage,
+                      icon: const Icon(Icons.image),
+                      label: const Text("Choose Image"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          side: const BorderSide(color: Colors.blue),
+                        ),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: captureImage,
+                      icon: const Icon(Icons.camera_alt, color: Colors.white),
+                      label: const Text("Capture"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 30),
+
+                /// Submit Button
+                if (angles.every((angle) => faceImages.containsKey(angle)))
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                    label: const Text("Submit Face Data"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                    ),
+                    onPressed: uploadFaceImagesAndSaveToFirestore,
+                  ),
+
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ),
+    );
+  }
+}
+
+class FacePainter extends CustomPainter {
+  List<Face> facesList;
+  dynamic imageFile;
+  FacePainter({required this.facesList, @required this.imageFile});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (imageFile != null) {
+      canvas.drawImage(imageFile, Offset.zero, Paint());
+    }
+
+    Paint p = Paint();
+    p.color = Colors.red;
+    p.style = PaintingStyle.stroke;
+    p.strokeWidth = 3;
+
+    for (Face face in facesList) {
+      canvas.drawRect(face.boundingBox, p);
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
