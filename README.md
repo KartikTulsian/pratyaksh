@@ -79,10 +79,10 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ### Backend & Database
 - **Backend as a Service**: Firebase
 - **Database**: Cloud Firestore
-    - Users collection (all roles)
-    - Timetable (daily period data)
-    - Attendance (logs with GPS & face data)
-    - Active Days (admin controls)
+  - Users collection (all roles)
+  - Timetable (daily period data)
+  - Attendance (logs with GPS & face data)
+  - Active Days (admin controls)
 - **Authentication**: Firebase Authentication
 - **Storage**: Firebase Storage for face embeddings
 
@@ -109,6 +109,168 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 - **Testing**: Widget, Integration, and Unit tests
 - **Deployment**: Android APK Release
 - **Monitoring**: Firebase Console for analytics and crash reporting
+
+## 📱 App Demonstration
+
+### Common Screens (All Roles)
+
+#### 1. Splash Screen
+<img src="screenshots/img1.png" width="300" alt="Splash Screen">
+
+---
+
+#### 2. Login Screen
+<img src="screenshots/img2.png" width="300" alt="Login Screen">
+
+**Secure Authentication:**
+- User ID field (12-digit enrollment number)
+- Password field with hidden input
+- Purple theme consistent with app branding
+- Automatic role-based routing after login
+- Validates credentials against Firebase
+
+---
+
+### 👨‍🎓 Student Dashboard
+
+#### 3. Timetable View
+<img src="screenshots/img3.png" width="300" alt="Student Timetable">
+
+**Daily Class Schedule:**
+- Day-wise tabs (Monday to Friday shown)
+- Period-wise subject listing with codes
+- Clock icons indicate scheduled periods
+- "Relocate" button for GPS-based attendance
+- Bottom navigation: Calendar, Profile, Logout
+
+---
+
+#### 4. Timetable with Active Period
+<img src="screenshots/img4.png" width="300" alt="Active Period">
+
+**Periods Activated highlighted with green:**
+- Fingerprint icon indicates attendance can be marked
+- System detects current period based on time
+- GPS verification ready for this class
+- Only active periods allow attendance marking
+
+---
+
+#### 5. Attendance Success Dialog
+<img src="screenshots/img5.png" width="300" alt="Attendance Marked">
+
+**Confirmation Screen:**
+- ✅ "Attendance Marked!" with success message
+- Subject details in green box:
+  - Neural Networks and Deep Learning (PCCCS575)
+  - Day: Monday, Period: 1
+  - Distance: 2.3m from teacher (GPS verification)
+- "Capture & Verify" button for face recognition
+
+---
+
+#### 6. Post-Attendance Timetable
+<img src="screenshots/img4.png" width="300" alt="Teacher View">
+
+**Attendance Status:**
+- Period 1: Green checkmark - "Attendance marked ✓"
+- Period 2: Fingerprint icon - Ready for marking
+- Period 5: Fingerprint icon - Lab session active
+- Teachers can view which periods have attendance completed
+- Quick access to mark remaining periods
+
+#### 7. Student Profile with Analytics
+<img src="screenshots/img6.png" width="300" alt="Student Profile">
+
+**Comprehensive Student Data:**
+- Attendance Summary: 57% overall with visual donut chart
+- Statistics breakdown
+- Password change option (three dots menu)
+
+---
+### 👨‍🏫 Teacher Dashboard
+
+#### 8. GPS Location Ready
+<img src="screenshots/img7.png" width="300" alt="GPS Ready">
+
+**Location Verification:**
+- Green banner: "Location ready for GPS attendance"
+- Confirms student is within campus geofence
+- Displays selected filters (Year 3, Semester 5, IT, Monday)
+- "Fetch Subjects" button to load today's classes
+- Toggle switches show enabled/disabled periods
+- 
+#### 9. Student Attendance View
+<img src="screenshots/img8.png" width="300" alt="Student Attendance">
+
+**Class Attendance Details:**
+- Statistics and details
+- Date selector for historical data
+- Search by name or enrollment number
+- Present/Absent tabs with counts
+- Delete option for corrections
+
+---
+
+### 👨‍💼 Admin Dashboard
+
+#### 10. Manage Classes - Timetable Setup
+<img src="screenshots/img9.png" width="300" alt="Manage Classes">
+
+**Admin Timetable Configuration:**
+- "Fetch TimeTable" button to load schedule
+- Listed subjects with edit/delete icons
+- Refresh and add new subject buttons
+- Bottom nav: Manage Classes, Attendance, Analytics, Students, Teachers, Logout
+
+---
+
+#### 11. Edit Period Details
+<img src="screenshots/img10.png" width="300" alt="Edit Period">
+<img src="screenshots/img11.png" width="300" alt="Edit Period">
+
+**Period Modification Form:**
+- Do the changes for Arrangement/Permanent/Combine Classes
+- Editable fields
+- "Update Period" button to save changes
+- Admin can modify any subject details
+
+---
+
+#### 12. Live Attendance Monitor
+<img src="screenshots/img12.png" width="300" alt="Live Monitor">
+
+**Real-Time Attendance Tracking:**
+- Filter by Year, Semester, Department
+- Date: Sunday, Oct 26, 2025
+- Live attendance cards showing
+- Purple badges show current attendance count
+- Monitors all ongoing classes simultaneously
+
+---
+
+#### 13. All Students List
+<img src="screenshots/img13.png" width="300" alt="All Students">
+
+**Student Database:**
+- Search by name or enrollment number
+- Filter icon for advanced searches
+- Student cards
+- "Add Student" floating button
+- Download and PDF export options
+
+---
+
+#### 14. All Teachers List
+<img src="screenshots/img14.png" width="300" alt="All Teachers">
+
+**Faculty Management:**
+- Search by name or enrollment
+- "Add Teacher" floating button for new faculty
+- Simple, clean interface for teacher administration
+- Access from admin bottom navigation
+
+---
 
 ## 🚀 Getting Started
 
@@ -164,11 +326,6 @@ FIREBASE_STORAGE_BUCKET=your_storage_bucket
 FACE_DETECTION_MODEL=path_to_model
 FACE_RECOGNITION_THRESHOLD=0.85
 
-# Geofencing
-GEOFENCE_RADIUS=100
-LOCATION_UPDATE_INTERVAL=5000
-```
-
 6. **Download ML Models**
 
 Place TensorFlow Lite models in:
@@ -194,7 +351,7 @@ flutter run -d <device_id>
 ```
 pratyaksh/
 ├── lib/
-│   ├── spalsh_screen.dart        # App entry point
+│   ├── splash_screen.dart        # Splash screen
 │   ├── main.dart                 # App entry point
 │   ├── models/                   # Data models
 │   │   ├── app_user_model.dart
@@ -309,25 +466,30 @@ open coverage/html/index.html
 - View personal attendance records
 - Access timetable and schedule
 - Receive attendance notifications
-- View attendance percentage
-- Download attendance reports
+- View attendance percentage with visual charts
+- GPS-verified location attendance
+- Real-time period activation
 
 ### 👨‍🏫 Teacher Features
 - Monitor real-time class attendance
-- Manual attendance override capability
+- View student-wise attendance
 - Generate class-wise reports
-- View student attendance history
-- Activate/deactivate attendance periods
+- View attendance statistics (present/absent/percentage)
+- Manual attendance corrections
 - Export attendance data
+- Search students by name or enrollment
 
 ### 👨‍💼 Admin Features
 - Manage users (students, teachers)
-- Configure timetables
+- Configure and edit timetables
 - Set up geofence boundaries
-- System-wide analytics
+- System-wide analytics dashboard
 - Control active attendance days
-- Manage department settings
+- Live attendance monitoring
 - Bulk operations support
+- Student profile management with attendance analytics
+- Teacher management
+- Period creation and modification
 
 ## 🛡️ Security & Privacy
 
@@ -374,12 +536,12 @@ open coverage/html/index.html
 
 ## 🎨 UI/UX Features
 
-- **Material Design**: Modern, intuitive interface
+- **Material Design**: Modern, intuitive interface with purple theme
 - **Brand Styling**: Custom typography and color schemes
 - **Adaptive Layouts**: Responsive design for various screen sizes
-- **Dark Mode**: Eye-friendly viewing in low light
-- **Accessibility**: Screen reader support and high contrast modes
-- **Smooth Animations**: Fluid transitions and micro-interactions
+- **Visual Feedback**: Green/purple indicators for status
+- **Accessibility**: Clear icons and readable text
+- **Smooth Animations**: Fluid transitions between screens
 
 ## 📊 Performance Optimization
 
@@ -388,17 +550,6 @@ open coverage/html/index.html
 - **Caching Strategy**: Local storage for frequent data
 - **Background Processing**: Non-blocking operations
 - **Memory Management**: Efficient resource utilization
-
-## 🔄 Development Workflow
-
-### Project Timeline
-- ✅ Feasibility Study & SRS (18 Jul - 01 Aug 2025)
-- 🔄 Design Documents (25 Jul - 08 Aug 2025)
-- 🔄 Development Phase (25 Jul - 22 Aug 2025)
-- ⏳ Implementation (08 Aug - 15 Aug 2025)
-- ⏳ Testing & Debugging (15 Aug - 22 Aug 2025)
-- ⏳ Quality Management (22 Aug - 29 Aug 2025)
-- ⏳ Deployment (29 Aug - 12 Sep 2025)
 
 ## 🌐 Future Enhancements
 
@@ -411,13 +562,13 @@ open coverage/html/index.html
 - 🎓 Integration with Learning Management Systems
 - 📧 Email reports for parents
 - 🔗 API for third-party integrations
+- 📸 Improved low-light face recognition
+- 🎯 Attendance prediction using ML
 
 ## 👥 Team
 
 **Developed by IEM Software Engineering Lab (PCCCS594)**
 
-- **Debayan De** (12023052004004) - Team Lead & Backend Developer
-- **Debosmita Ghosh** (12023052004035) - Full Stack Support & Documentation Lead
 - **Kartik Tulsian** (12023052004036) - Solution Architect & UI/UX Designer
 
 **Mentored by:**
@@ -426,25 +577,9 @@ open coverage/html/index.html
 
 **Institution:** Department of Information Technology, Institute of Engineering and Management
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-Please ensure your code follows Flutter style guidelines and includes tests.
-
 ## 📄 License
 
 This project is part of an academic curriculum at IEM and is subject to institutional guidelines. For commercial use or licensing inquiries, please contact the team.
-
-## 📞 Support & Contact
-
-- 📧 Email: []
 
 ## 🙏 Acknowledgments
 
@@ -471,6 +606,8 @@ To learn more about the technologies used:
 - [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 - [Flutter Widget Catalog](https://docs.flutter.dev/development/ui/widgets)
 - [Flutter YouTube Channel](https://www.youtube.com/c/flutterdev)
+
+---
 
 **Made with 💙 for modern educational institutions**
 
