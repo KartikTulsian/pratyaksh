@@ -115,12 +115,12 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ### Common Screens (All Roles)
 
 #### 1. Splash Screen
-<img src="screenshots/img1.png" width="300" alt="Splash Screen">
+<img src="images/img1.jpeg" width="250" height="500" alt="Splash Screen">
 
 ---
 
 #### 2. Login Screen
-<img src="screenshots/img2.png" width="300" alt="Login Screen">
+<img src="images/img2.jpeg" width="250" height="500" alt="Login Screen">
 
 **Secure Authentication:**
 - User ID field (12-digit enrollment number)
@@ -134,7 +134,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ### 👨‍🎓 Student Dashboard
 
 #### 3. Timetable View
-<img src="screenshots/img3.png" width="300" alt="Student Timetable">
+<img src="images/img3.jpeg" width="250" height="500" alt="Student Timetable">
 
 **Daily Class Schedule:**
 - Day-wise tabs (Monday to Friday shown)
@@ -146,7 +146,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 4. Timetable with Active Period
-<img src="screenshots/img4.png" width="300" alt="Active Period">
+<img src="images/img4.jpeg" width="250" height="500" alt="Active Period">
 
 **Periods Activated highlighted with green:**
 - Fingerprint icon indicates attendance can be marked
@@ -157,7 +157,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 5. Attendance Success Dialog
-<img src="screenshots/img5.png" width="300" alt="Attendance Marked">
+<img src="images/img5.jpeg" width="250" height="500" alt="Attendance Marked">
 
 **Confirmation Screen:**
 - ✅ "Attendance Marked!" with success message
@@ -170,7 +170,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 6. Post-Attendance Timetable
-<img src="screenshots/img4.png" width="300" alt="Teacher View">
+<img src="images/img4.jpeg" width="250" height="500" alt="Teacher View">
 
 **Attendance Status:**
 - Period 1: Green checkmark - "Attendance marked ✓"
@@ -180,7 +180,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 - Quick access to mark remaining periods
 
 #### 7. Student Profile with Analytics
-<img src="screenshots/img6.png" width="300" alt="Student Profile">
+<img src="images/img6.jpeg" width="250" height="500" alt="Student Profile">
 
 **Comprehensive Student Data:**
 - Attendance Summary: 57% overall with visual donut chart
@@ -191,7 +191,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ### 👨‍🏫 Teacher Dashboard
 
 #### 8. GPS Location Ready
-<img src="screenshots/img7.png" width="300" alt="GPS Ready">
+<img src="images/img7.jpeg" width="250" height="500" alt="GPS Ready">
 
 **Location Verification:**
 - Green banner: "Location ready for GPS attendance"
@@ -201,7 +201,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 - Toggle switches show enabled/disabled periods
 - 
 #### 9. Student Attendance View
-<img src="screenshots/img8.png" width="300" alt="Student Attendance">
+<img src="images/img8.jpeg" width="250" height="500" alt="Student Attendance">
 
 **Class Attendance Details:**
 - Statistics and details
@@ -215,7 +215,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ### 👨‍💼 Admin Dashboard
 
 #### 10. Manage Classes - Timetable Setup
-<img src="screenshots/img9.png" width="300" alt="Manage Classes">
+<img src="images/img9.jpeg" width="250" height="500" alt="Manage Classes">
 
 **Admin Timetable Configuration:**
 - "Fetch TimeTable" button to load schedule
@@ -226,8 +226,8 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 11. Edit Period Details
-<img src="screenshots/img10.png" width="300" alt="Edit Period">
-<img src="screenshots/img11.png" width="300" alt="Edit Period">
+<img src="images/img10.jpeg" width="250" height="500" alt="Edit Period">
+<img src="images/img11.jpeg" width="250" height="500" alt="Edit Period">
 
 **Period Modification Form:**
 - Do the changes for Arrangement/Permanent/Combine Classes
@@ -238,7 +238,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 12. Live Attendance Monitor
-<img src="screenshots/img12.png" width="300" alt="Live Monitor">
+<img src="images/img12.jpeg" width="250" height="500" alt="Live Monitor">
 
 **Real-Time Attendance Tracking:**
 - Filter by Year, Semester, Department
@@ -250,7 +250,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 13. All Students List
-<img src="screenshots/img13.png" width="300" alt="All Students">
+<img src="images/img13.jpeg" width="250" height="500" alt="All Students">
 
 **Student Database:**
 - Search by name or enrollment number
@@ -262,7 +262,7 @@ Pratyaksh contributes to **UN Sustainable Development Goals**:
 ---
 
 #### 14. All Teachers List
-<img src="screenshots/img14.png" width="300" alt="All Teachers">
+<img src="images/img14.jpeg" width="250" height="500" alt="All Teachers">
 
 **Faculty Management:**
 - Search by name or enrollment
